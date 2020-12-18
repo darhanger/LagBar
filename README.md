@@ -7,6 +7,6 @@ A simple Lagbar that you can move around. It will show you your current FPS and 
 To move the frame, simply hold down SHIFT and drag the LagBar frame.
 <br>
 ## Slash Commands:
-+ /lagbar reset - resets window position to the center of the screen ;
-+ /lagbar bg - shows/hides the background of the window ;
-+ /lagbar scale # - changes the scale of the LagBar frame ;
++ `/lagbar reset` - resets window position to the center of the screen ;
++ `/lagbar bg` - shows/hides the background of the window ;
++ `/lagbar scale #` - changes the scale of the LagBar frame ;
