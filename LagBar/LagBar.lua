@@ -3,11 +3,11 @@
 LagBar = {};
 LagBar.version = GetAddOnMetadata("LagBar", "Version")
 LagBar.PL_Lock = false
-
 LagBar.LOW_LATENCY = 300
 LagBar.MEDIUM_LATENCY = 600
 LagBar.MAX_INTERVAL = 1
 LagBar.UPDATE_INTERVAL = 0
+local L = LibStub("AceLocale-3.0"):GetLocale("LagBar")
 
 function LagBar:Enable()
 
@@ -236,14 +236,15 @@ function LagBar:OnUpdate(arg1)
 		--else
 		--	LagBar_Text:SetText("Ping: "..latency.." ms");
 		--end
-
+		local d = " "
 		local framerate = floor(GetFramerate() + 0.5)
-		local framerate_text = format("|cff%s%d|r fps", LagBar_GetThresholdHexColor(framerate / 60), framerate)
+		local framerate_text = format("|cff%s%d|r", LagBar_GetThresholdHexColor(framerate / 60), framerate)
+		local framerate_local = L["FPS"];
 		
 		local latency = select(3, GetNetStats())
-		local latency_text = format("|cff%s%d|r ms", LagBar_GetThresholdHexColor(latency, 1000, 500, 250, 100, 0), latency)
-		
-		LagBarFrameText:SetText(framerate_text.." | "..latency_text);
+		local latency_text = format("|cff%s%d|r", LagBar_GetThresholdHexColor(latency, 1000, 500, 250, 100, 0), latency)
+		local latency_local = L["Ms"];
+		LagBarFrameText:SetText(framerate_text..d..framerate_local.." | "..latency_text..d..latency_local);
 	end
 end
 
