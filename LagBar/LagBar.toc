@@ -1,8 +1,8 @@
 ## Interface: 30300
 ## Title: |cffCCCC88LagBar|r
 ## Author: DarhangeR
-## Version:  1.1 (Moded)
-## X-Date: 2021-29-06
+## Version:  1.2 (Moded)
+## X-Date: 2021-13-09
 ## Notes: |cffCCCC88Displays a simple bar with some Latency Information.|r
 ## SavedVariables: LagBar_DB
 
