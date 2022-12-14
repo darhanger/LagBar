@@ -3,7 +3,7 @@
 
 # LagBar 1.2 (Moded)
 
-![LagBar](http://i.piccy.info/i9/8ff852212e038ac5fb0e41a5b1986a5d/1571231222/8397/1342752/LagBar.png)
+![LagBar](https://i.ibb.co/RyY0wJJ/image.png)
   
 ![Lua](https://img.shields.io/badge/Lua-2C2D72?style=flat-squaree&logo=lua&logoColor=white)
 [![Discord Server](https://img.shields.io/badge/Discord-7289DA?style=flat-squaree&logo=discord&logoColor=white)](https://discord.gg/xBFKJc6QRr)
