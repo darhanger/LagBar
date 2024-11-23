@@ -1,7 +1,7 @@
 <!-- markdownlint-disable MD004 MD033 -->
 <div align="center">
 
-# LagBar 1.2 (Moded)
+# LagBar 1.3 (Moded)
 
 ![LagBar](https://i.ibb.co/RyY0wJJ/image.png)
   
