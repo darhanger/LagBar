@@ -1,7 +1,7 @@
 <!-- markdownlint-disable MD004 MD033 -->
 <div align="center">
 
-# LagBar 1.3 (Moded)
+# LagBar 1.4 (Moded)
 
 ![LagBar](https://i.ibb.co/RyY0wJJ/image.png)
   
@@ -12,13 +12,20 @@
 [![Discord Server](https://img.shields.io/badge/Discord-7289DA?style=flat-square&logo=discord&logoColor=white)](https://discord.gg/ZKFkvrzaU4)
 [![PayPal](https://img.shields.io/badge/PayPal-00457C?style=flat-square&logo=paypal&logoColor=white)](https://www.paypal.com/donate/?hosted_button_id=WMPGGC32C7U7U)
    
-A simple Lagbar that you can move around. It will show you your current FPS and the current Latency (or Lag) that you are experiencing.
+A simple movable LagBar that displays your **FPS**, **Latency (Ping)**, and additional system/network information.
 </div>
 
-## Futures:
-To move the frame, simply hold down SHIFT and drag the LagBar frame.
+### ✨ Features
+- Move the frame by holding **SHIFT + Drag**
+- Displays:
+  - FPS
+  - Latency
+  - (Optional) Add-on Memory usage
+  - (Optional) Network traffic (IN/OUT)
 
-## Slash Commands:
-+ `/lagbar reset` - resets window position to the center of the screen ;
-+ `/lagbar bg` - shows/hides the background of the window ;
-+ `/lagbar scale #` - changes the scale of the LagBar frame ;
+### ⌨️ Slash Commands
+- `/lagbar reset` — reset window position to the center  
+- `/lagbar bg` — toggle background visibility  
+- `/lagbar scale #` — change scale (e.g. `0.5`, `1`, `1.5`)  
+- `/lagbar memory` — toggle total add-on memory (with tooltip breakdown)  
+- `/lagbar net` — toggle network IN/OUT (download/upload display)  

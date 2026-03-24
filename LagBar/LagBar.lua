@@ -8,6 +8,14 @@ if flagElvUI then
 	r, g, b, a, dynamicEdgeSize, dynamicInsets = .0,.0,.0,.75, 2, 2;
 end;
 
+local format = string.format;
+local floor = math.floor;
+local tinsert = table.insert;
+local sort = table.sort;
+local min = math.min;
+local tonumber = tonumber;
+local concat = table.concat;
+
 LagBar = {};
 LagBar.version = GetAddOnMetadata("LagBar", "Version");
 LagBar.PL_Lock = false;
@@ -16,6 +24,47 @@ LagBar.MEDIUM_LATENCY = 600;
 LagBar.MAX_INTERVAL = 1;
 LagBar.UPDATE_INTERVAL = 0;
 local L = LibStub("AceLocale-3.0"):GetLocale("LagBar");
+
+local function LagBar_FormatMem(memoryKB)
+	if memoryKB > 999 then
+		return format("%.1f MB", memoryKB / 1024);
+	else
+		return format("%d KB", memoryKB);
+	end
+end
+
+local function LagBar_AddAddonUsageTooltip(tt)
+	UpdateAddOnMemoryUsage();
+	tt:AddLine(L["TopAddOnMemory"], 0, 0.81, 0.82);
+	local memTable = {};
+	for i = 1, GetNumAddOns() do
+		if IsAddOnLoaded(i) then
+			local _, title = GetAddOnInfo(i);
+			tinsert(memTable, { title = title, memory = GetAddOnMemoryUsage(i) });
+		end
+	end
+	sort(memTable, function(a, b) return a.memory > b.memory end);
+	for i = 1, min(15, #memTable) do
+		tt:AddLine(format("%s: %s", memTable[i].title, LagBar_FormatMem(memTable[i].memory)), 1, 1, 1);
+	end
+	if tonumber(GetCVar("scriptProfile")) == 1 then
+		UpdateAddOnCPUUsage();
+		tt:AddLine(" ");
+		tt:AddLine(L["TopAddOnCPU"], 0, 0.81, 0.82);
+		local cpuTable = {};
+		for j = 1, GetNumAddOns() do
+			if IsAddOnLoaded(j) then
+				local _, titleCPU = GetAddOnInfo(j);
+				tinsert(cpuTable, { title = titleCPU, cpu = GetAddOnCPUUsage(j) });
+			end
+		end
+		sort(cpuTable, function(a, b) return a.cpu > b.cpu end);
+		for k = 1, min(15, #cpuTable) do
+			tt:AddLine(format("%s: %.2f ms", cpuTable[k].title, cpuTable[k].cpu), 1, 1, 1);
+		end
+	end
+end
+
 function LagBar:Enable()
 	if not LagBar_DB then
 		LagBar_DB = {};
@@ -29,6 +78,13 @@ function LagBar:Enable()
 	if LagBar_DB.scale == nil then
 		LagBar_DB.scale = 1;
 	end;
+
+	if LagBar_DB.showMemory == nil then
+		LagBar_DB.showMemory = false;
+	end
+	if LagBar_DB.showNet == nil then
+		LagBar_DB.showNet = false;
+	end
 
 	SLASH_LAGBAR1 = "/lagbar";
 	SlashCmdList["LAGBAR"] = LagBar_SlashCommand;
@@ -44,7 +100,7 @@ function LagBar:OnEvent(event, arg1, arg2, arg3, arg4, ...)
 end;
 
 function LagBar_SlashCommand(cmd)
-	local a,b,c = strfind(cmd, "(%S+)"); --contiguous string of non-space characters	
+	local a,b,c = strfind(cmd, "(%S+)");
 	if a and a ~= "" then
 		if c and c:lower() == "reset" then
 			DEFAULT_CHAT_FRAME:AddMessage("LagBar: Frame position has been reset!");
@@ -58,7 +114,13 @@ function LagBar_SlashCommand(cmd)
 			return nil;		
 		elseif c and c:lower() == "impdisplay" then
 			LagBar:ImpDisplayToggle();
-			return nil;	
+			return nil;
+		elseif c and c:lower() == "memory" then
+			LagBar:MemoryToggle();
+			return nil;
+		elseif c and c:lower() == "net" then
+			LagBar:NetToggle();
+			return nil;
 		elseif c and c:lower() == "scale" then
 			if b then
 				local scalenum = strsub(cmd, b+2)
@@ -71,10 +133,12 @@ function LagBar_SlashCommand(cmd)
 			end
 		end
 	end
-	DEFAULT_CHAT_FRAME:AddMessage("LagBar");
-	DEFAULT_CHAT_FRAME:AddMessage("/lagbar reset - resets the frame position");
-	DEFAULT_CHAT_FRAME:AddMessage("/lagbar bg - toggles the background on/off");
-	DEFAULT_CHAT_FRAME:AddMessage("/lagbar scale # - Set the scale of the LagBar frame. Use small numbers like 0.5, 0.2, 1, 1.1, 1.5, etc..");
+	DEFAULT_CHAT_FRAME:AddMessage(L["HelpTitle"]);
+	DEFAULT_CHAT_FRAME:AddMessage(L["ResetCommand"]);
+	DEFAULT_CHAT_FRAME:AddMessage(L["BgCommand"]);
+	DEFAULT_CHAT_FRAME:AddMessage(L["ScaleCommand"]);
+	DEFAULT_CHAT_FRAME:AddMessage(L["MemoryCommand"]);
+	DEFAULT_CHAT_FRAME:AddMessage(L["NetCommand"]);
 end;
 
 function LagBar:MoveFrame()
@@ -122,14 +186,11 @@ function LagBar:DrawGUI()
 	lbFrame.text:SetPoint("CENTER", lbFrame, "CENTER", 0, 0);
 	lbFrame.text:Show();
 	lbFrame:SetScript("OnEnter", function()
+		if not LagBar_DB.showMemory then
+			return;
+		end
 		GameTooltip:SetOwner(lbFrame, "ANCHOR_TOPRIGHT", 0, 15);
-		GameTooltip:SetText(L["FeatureHeader"]);
-		GameTooltip:AddLine(" ");
-		GameTooltip:AddLine(L["RightClickToLock"], 1, 1, 1, true);
-		GameTooltip:AddLine(" ");
-		GameTooltip:AddLine(L["ResetCommand"], 1, 1, 1, true);
-		GameTooltip:AddLine(L["BgCommand"], 1, 1, 1, true);
-		GameTooltip:AddLine(L["ScaleCommand"], 1, 1, 1, true);
+		LagBar_AddAddonUsageTooltip(GameTooltip);
 		GameTooltip:Show();
 	end)
 	lbFrame:SetScript("OnLeave", function()
@@ -137,8 +198,8 @@ function LagBar:DrawGUI()
 	end)
 	lbFrame:SetScript("OnLoad", function()end)
 	lbFrame:SetScript("OnShow", function()end)	
-	lbFrame:SetScript("OnUpdate", function()			
-		LagBar:OnUpdate(arg1);
+	lbFrame:SetScript("OnUpdate", function(self, elapsed)
+		LagBar:OnUpdate(elapsed);
 	end)
 	lbFrame:SetScript("OnMouseDown", function(frame, button) 
 		if not LagBar_DB.locked and button ~= "RightButton" then
@@ -195,20 +256,67 @@ function LagBar:BackgroundToggle()
 	end
 end;
 
-function LagBar:OnUpdate(arg1)
+function LagBar:MemoryToggle()
+	LagBar_DB.showMemory = not LagBar_DB.showMemory;
+	if LagBar_DB.showMemory then
+		DEFAULT_CHAT_FRAME:AddMessage(L["MemoryEnabled"]);
+	else
+		DEFAULT_CHAT_FRAME:AddMessage(L["MemoryDisabled"]);
+	end
+end
+
+function LagBar:NetToggle()
+	LagBar_DB.showNet = not LagBar_DB.showNet;
+	if LagBar_DB.showNet then
+		DEFAULT_CHAT_FRAME:AddMessage(L["NetEnabled"]);
+	else
+		DEFAULT_CHAT_FRAME:AddMessage(L["NetDisabled"]);
+	end
+end
+
+function LagBar:OnUpdate(elapsed)
 	if (LagBar.UPDATE_INTERVAL > 0) then
-		LagBar.UPDATE_INTERVAL = LagBar.UPDATE_INTERVAL - arg1;
+		LagBar.UPDATE_INTERVAL = LagBar.UPDATE_INTERVAL - elapsed;
 	else
 		LagBar.UPDATE_INTERVAL = LagBar.MAX_INTERVAL;
-		local d = " "
-		local framerate = floor(GetFramerate() + 0.5)
-		local framerate_text = format("|cff%s%d|r", LagBar_GetThresholdHexColor(framerate / 60), framerate)
+		local d = " ";
+		local framerate = floor(GetFramerate() + 0.5);
+		local framerate_text = format("|cff%s%d|r", LagBar_GetThresholdHexColor(framerate / 60), framerate);
 		local framerate_local = L["FPS"];
-		
-		local latency = select(3, GetNetStats())
-		local latency_text = format("|cff%s%d|r", LagBar_GetThresholdHexColor(latency, 1000, 500, 250, 100, 0), latency)
+
+		local down, up, latency = GetNetStats();
+		local latency_text = format("|cff%s%d|r", LagBar_GetThresholdHexColor(latency, 1000, 500, 250, 100, 0), latency);
 		local latency_local = L["Ms"];
-		LagBarFrameText:SetText(framerate_local..d..framerate_text.." | "..latency_local..d..latency_text);
+
+		local parts = { framerate_local..d..framerate_text, latency_local..d..latency_text };
+
+		if LagBar_DB.showNet then
+			local inColor = LagBar_GetThresholdHexColor(down, 100, 50, 25, 15, 5);
+			local outColor = LagBar_GetThresholdHexColor(up, 100, 50, 25, 15, 5);
+			tinsert(parts, format("|cffffffff%s:|r |cff%s%s KB/s|r", L["In"], inColor, format("%d", floor(down + 0.5))));
+			tinsert(parts, format("|cffffffff%s:|r |cff%s%s KB/s|r", L["Out"], outColor, format("%d", floor(up + 0.5))));
+		end
+
+		if LagBar_DB.showMemory then
+			UpdateAddOnMemoryUsage();
+			local totalMem = 0;
+			for i = 1, GetNumAddOns() do
+				if IsAddOnLoaded(i) then
+					totalMem = totalMem + GetAddOnMemoryUsage(i);
+				end
+			end
+			local memMB = totalMem / 1024;
+			local memColor = LagBar_GetThresholdHexColor(memMB, 50, 30, 20, 10, 5);
+			tinsert(parts, format("|cffffffff%s:|r |cff%s%s|r", L["Mem"], memColor, LagBar_FormatMem(totalMem)));
+		end
+
+		LagBarFrameText:SetText(concat(parts, " | "));
+
+		local textW = LagBarFrameText:GetStringWidth() + 24;
+		if textW < 120 then
+			textW = 120;
+		end
+		LagBarFrame:SetWidth(textW);
 	end
 end;
 
