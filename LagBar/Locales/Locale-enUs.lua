@@ -1,4 +1,4 @@
-local L = LibStub("AceLocale-3.0"):NewLocale("LagBar", "enUS")
+local L = LibStub("AceLocale-3.0"):NewLocale("LagBar", "enUS", true)
 if not L then return end
 
 L["FPS"] = "FPS"
